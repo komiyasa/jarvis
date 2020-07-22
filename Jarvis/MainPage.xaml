@@ -7,7 +7,7 @@
              x:Class="Jarvis.MainPage">
 
     <StackLayout>
-        <Button x:Name="pictureButton" Text="写真撮影" Clicked="pictureButton_Clicked" />
+        <Button x:Name="pictureButton" Text="Take Picture" Clicked="pictureButton_Clicked" />
         <Image x:Name="image" HorizontalOptions = "FillAndExpand" VerticalOptions = "FillAndExpand" />
     </StackLayout>
 
