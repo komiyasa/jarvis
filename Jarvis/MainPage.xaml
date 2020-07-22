@@ -6,14 +6,9 @@
              mc:Ignorable="d"
              x:Class="Jarvis.MainPage">
 
-    <StackLayout IsClippedToBounds="True">
-        <!-- Place new controls here -->
-        <Label Text="Welcome to Xamarin.Forms!" 
-           HorizontalOptions="Center"
-           VerticalOptions="CenterAndExpand" />
-        <Image Source="XamarinLogo" WidthRequest="{OnPlatform iOS=300, Android=250}" HorizontalOptions="Center" />
-        <Button Text="Clisk Me" Clicked="OnButtonClicked"/>
-
+    <StackLayout>
+        <Button x:Name="pictureButton" Text="写真撮影" Clicked="pictureButton_Clicked" />
+        <Image x:Name="image" HorizontalOptions = "FillAndExpand" VerticalOptions = "FillAndExpand" />
     </StackLayout>
 
 </ContentPage>

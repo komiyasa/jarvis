@@ -480,3 +480,4 @@ C:\Users\komiyasa\source\repos\Jarvis\Jarvis.Android\obj\Debug\90\flata\6B786B77
 C:\Users\komiyasa\source\repos\Jarvis\Jarvis.Android\obj\Debug\90\flata\2F3C04BE7CD1B712.flata
 C:\Users\komiyasa\source\repos\Jarvis\Jarvis.Android\obj\Debug\90\flata\CB6AD7CE683D9FDE.flata
 C:\Users\komiyasa\source\repos\Jarvis\Jarvis.Android\obj\Debug\90\flata\07A66695563DB896.flata
+C:\Users\komiyasa\source\repos\Jarvis\Jarvis.Android\obj\Debug\90\res\xml\file_paths.xml
