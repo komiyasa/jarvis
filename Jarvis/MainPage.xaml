@@ -9,6 +9,8 @@
     <StackLayout>
         <Button x:Name="pictureButton" Text="写真を取る" Clicked="pictureButton_Clicked" />
         <Image x:Name="image" HorizontalOptions = "FillAndExpand" VerticalOptions = "FillAndExpand" />
+        <Label x:Name="Result" Text="ここに分析結果を表示させる" HorizontalOptions="Center" />
+
     </StackLayout>
 
 </ContentPage>
