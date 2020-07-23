@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Plugin.Media;
+using System.Net.Http;
+using System.IO;
+using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
 
 namespace Jarvis
 {
@@ -39,6 +43,81 @@ namespace Jarvis
                 var stream = file.GetStream();
                 return stream;
             });
+        }
+
+        //Azureサブスクリプション系の設定をここで実施
+        static string subscriptionKey = Environment.GetEnvironmentVariable("COMPUTER_VISION_SUBSCRIPTION_KEY");
+        static string endpoint = Environment.GetEnvironmentVariable("COMPUTER_VISION_ENDPOINT");
+        static string uriBase = endpoint + "/vision/v3.0//read/analyze";
+
+        //読み込むイメージのパスをここで設定している
+        static string imageFilePath = @"my-image.png";
+
+        //イメージパスから画像を分析するメソッド
+        private async void ReadText(string imageFilePath)
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add(
+                    "Ocp-Apim-Subscription-Key", subscriptionKey);
+
+                string url = uriBase;
+                HttpResponseMessage response;
+                string operationLocation;
+                byte[] byteData = GetImageAsByteArray(imageFilePath);
+
+                using (ByteArrayContent content = new ByteArrayContent(byteData))
+                {
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                    response = await client.PostAsync(url, content);
+                }
+
+                if (response.IsSuccessStatusCode)
+                    operationLocation =　response.Headers.GetValues("Operation-Location").FirstOrDefault();
+                else
+                {
+                    string errorString = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("\n\nResponse:\n{0}\n",JToken.Parse(errorString).ToString());
+                    return;
+                }
+
+
+                string contentString;
+                int i = 0;
+                do
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    response = await client.GetAsync(operationLocation);
+                    contentString = await response.Content.ReadAsStringAsync();
+                    ++i;
+                }
+                while (i < 60 && contentString.IndexOf("\"status\":\"succeeded\"") == -1);
+
+                if (i == 60 && contentString.IndexOf("\"status\":\"succeeded\"") == -1)
+                {
+                    Console.WriteLine("\nTimeout error.\n");
+                    return;
+                }
+
+                Console.WriteLine("\nResponse:\n\n{0}\n",JToken.Parse(contentString).ToString());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\n" + e.Message);
+            }
+        }
+
+        //Image をバイトに変換するメソッド
+        static byte[] GetImageAsByteArray(string imageFilePath)
+        {
+            // Open a read-only file stream for the specified file.
+            using (FileStream fileStream = new FileStream(imageFilePath, FileMode.Open, FileAccess.Read))
+            {
+                // Read the file's contents into a byte array.
+                BinaryReader binaryReader = new BinaryReader(fileStream);
+                return binaryReader.ReadBytes((int)fileStream.Length);
+            }
         }
     }
 }
