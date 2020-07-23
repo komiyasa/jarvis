@@ -10,6 +10,8 @@ using System.Net.Http;
 using System.IO;
 using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
+using Jarvis.Services;
+using Plugin.Media.Abstractions;
 
 namespace Jarvis
 {
@@ -18,106 +20,70 @@ namespace Jarvis
     [DesignTimeVisible(false)]
     public partial class MainPage : ContentPage
     {
+        IFaceRecognitionService _faceRecognitionService;
+        MediaFile photo;
+
         public MainPage()
         {
             InitializeComponent();
+            _faceRecognitionService = new FaceRecognitionService();
         }
 
         private async void pictureButton_Clicked(object sender, System.EventArgs e)
         {
             await CrossMedia.Current.Initialize();
-            if (!Plugin.Media.CrossMedia.Current.IsCameraAvailable || !Plugin.Media.CrossMedia.Current.IsTakePhotoSupported)
+            // Take photo
+            if (CrossMedia.Current.IsCameraAvailable || CrossMedia.Current.IsTakePhotoSupported)
             {
-                return; 
+                photo = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
+                {
+                    Name = "emotion.jpg",
+                    PhotoSize = PhotoSize.Small
+                });
+
+                if (photo != null)
+                {
+                    image.Source = ImageSource.FromStream(photo.GetStream);
+                }
             }
-            var mediaOptions = new Plugin.Media.Abstractions.StoreCameraMediaOptions
+            else
             {
-                Directory = "PictureTest", // 保存先ディレクトリ
-                Name = $"{DateTime.UtcNow}.jpg" // 保存ファイル名
-            };
-            var file = await CrossMedia.Current.TakePhotoAsync(mediaOptions);
-            if (file == null)
-                return;
-            image.Source = ImageSource.FromStream(() =>
-            {
-                var stream = file.GetStream();
-                return stream;
-            });
-        }
+                await DisplayAlert("No Camera", "Camera unavailable.", "OK");
+            }
 
-        //Azureサブスクリプション系の設定をここで実施
-        static string subscriptionKey = Environment.GetEnvironmentVariable("COMPUTER_VISION_SUBSCRIPTION_KEY");
-        static string endpoint = Environment.GetEnvironmentVariable("COMPUTER_VISION_ENDPOINT");
-        static string uriBase = endpoint + "/vision/v3.0//read/analyze";
+            ((Button)sender).IsEnabled = false;
+            activityIndicator.IsRunning = true;
 
-        //読み込むイメージのパスをここで設定している
-        static string imageFilePath = @"my-image.png";
-
-        //イメージパスから画像を分析するメソッド
-        private async void ReadText(string imageFilePath)
-        {
+            // Recognize emotion
             try
             {
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add(
-                    "Ocp-Apim-Subscription-Key", subscriptionKey);
-
-                string url = uriBase;
-                HttpResponseMessage response;
-                string operationLocation;
-                byte[] byteData = GetImageAsByteArray(imageFilePath);
-
-                using (ByteArrayContent content = new ByteArrayContent(byteData))
+                if (photo != null)
                 {
-                    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                    response = await client.PostAsync(url, content);
+                    var faceAttributes = new FaceAttributeType[] { FaceAttributeType.Emotion };
+                    using (var photoStream = photo.GetStream())
+                    {
+                        Face[] faces = await _faceRecognitionService.DetectAsync(photoStream, true, false, faceAttributes);
+                        if (faces.Any())
+                        {
+                            // Emotions detected are happiness, sadness, surprise, anger, fear, contempt, disgust, or neutral.
+                            emotionResultLabel.Text = faces.FirstOrDefault().FaceAttributes.Emotion.ToRankedList().FirstOrDefault().Key;
+                        }
+                        photo.Dispose();
+                    }
                 }
-
-                if (response.IsSuccessStatusCode)
-                    operationLocation =　response.Headers.GetValues("Operation-Location").FirstOrDefault();
-                else
-                {
-                    string errorString = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine("\n\nResponse:\n{0}\n",JToken.Parse(errorString).ToString());
-                    return;
-                }
-
-
-                string contentString;
-                int i = 0;
-                do
-                {
-                    System.Threading.Thread.Sleep(1000);
-                    response = await client.GetAsync(operationLocation);
-                    contentString = await response.Content.ReadAsStringAsync();
-                    ++i;
-                }
-                while (i < 60 && contentString.IndexOf("\"status\":\"succeeded\"") == -1);
-
-                if (i == 60 && contentString.IndexOf("\"status\":\"succeeded\"") == -1)
-                {
-                    Console.WriteLine("\nTimeout error.\n");
-                    return;
-                }
-
-                Console.WriteLine("\nResponse:\n\n{0}\n",JToken.Parse(contentString).ToString());
             }
-            catch (Exception e)
+            catch (FaceAPIException fx)
             {
-                Console.WriteLine("\n" + e.Message);
+                Debug.WriteLine(fx.Message);
             }
-        }
-
-        //Image をバイトに変換するメソッド
-        static byte[] GetImageAsByteArray(string imageFilePath)
-        {
-            // Open a read-only file stream for the specified file.
-            using (FileStream fileStream = new FileStream(imageFilePath, FileMode.Open, FileAccess.Read))
+            catch (Exception ex)
             {
-                // Read the file's contents into a byte array.
-                BinaryReader binaryReader = new BinaryReader(fileStream);
-                return binaryReader.ReadBytes((int)fileStream.Length);
+                Debug.WriteLine(ex.Message);
             }
+
+            activityIndicator.IsRunning = false;
+            ((Button)sender).IsEnabled = true;
+
         }
     }
 }
