@@ -44,14 +44,14 @@ namespace Jarvis
                 return stream;
             });
 
-            //試しに蘆花るのファイルパスを指定してみる
-            string filepath = @"my-image.png";
+            //試しにローカルのファイルパスを指定してみる
+            string filepath = @"sample/bill.png";
             ReadText(filepath);
         }
 
         //Azureサブスクリプション系の設定をここで実施
-        static string subscriptionKey = Environment.GetEnvironmentVariable("COMPUTER_VISION_SUBSCRIPTION_KEY");
-        static string endpoint = Environment.GetEnvironmentVariable("COMPUTER_VISION_ENDPOINT");
+        static string subscriptionKey = Environment.GetEnvironmentVariable("8ae040a56aad4357adce4b11f1fa4f9a");
+        static string endpoint = Environment.GetEnvironmentVariable("https://japaneast.api.cognitive.microsoft.com/");
         static string uriBase = endpoint + "/vision/v3.0//read/analyze";
 
         //読み込むイメージのパスをここで設定している
