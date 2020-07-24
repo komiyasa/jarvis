@@ -33,7 +33,7 @@ namespace Jarvis
             var mediaOptions = new Plugin.Media.Abstractions.StoreCameraMediaOptions
             {
                 Directory = "PictureTest", // 保存先ディレクトリ
-                Name = $"{DateTime.UtcNow}.jpg" // 保存ファイル名
+                Name = $"{DateTime.UtcNow}.jpg" // 保存ファイル名 
             };
             var file = await CrossMedia.Current.TakePhotoAsync(mediaOptions);
             if (file == null)
@@ -43,18 +43,22 @@ namespace Jarvis
                 var stream = file.GetStream();
                 return stream;
             });
+
+            //試しにローカルのファイルパスを指定してみる
+            string filepath = @"bill.png";
+            ReadText(filepath);
         }
 
         //Azureサブスクリプション系の設定をここで実施
-        static string subscriptionKey = Environment.GetEnvironmentVariable("COMPUTER_VISION_SUBSCRIPTION_KEY");
-        static string endpoint = Environment.GetEnvironmentVariable("COMPUTER_VISION_ENDPOINT");
+        static string subscriptionKey = Environment.GetEnvironmentVariable("8ae040a56aad4357adce4b11f1fa4f9a");
+        static string endpoint = Environment.GetEnvironmentVariable("https://japaneast.api.cognitive.microsoft.com/");
         static string uriBase = endpoint + "/vision/v3.0//read/analyze";
 
         //読み込むイメージのパスをここで設定している
-        static string imageFilePath = @"my-image.png";
+        //static string imageFilePath = @"my-image.png";
 
         //イメージパスから画像を分析するメソッド
-        private async void ReadText(string imageFilePath)
+        public async void ReadText(string imageFilePath)
         {
             try
             {
@@ -100,7 +104,7 @@ namespace Jarvis
                     return;
                 }
 
-                Console.WriteLine("\nResponse:\n\n{0}\n",JToken.Parse(contentString).ToString());
+                Console.WriteLine("\nResponse<ここがCognitive Serviceからのレスポンス！！！！>:\n\n{0}\n",JToken.Parse(contentString).ToString());
             }
             catch (Exception e)
             {
