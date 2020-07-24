@@ -45,7 +45,7 @@ namespace Jarvis
             });
 
             //試しにローカルのファイルパスを指定してみる
-            string filepath = @"sample/bill.png";
+            string filepath = @"bill.png";
             ReadText(filepath);
         }
 
@@ -58,7 +58,7 @@ namespace Jarvis
         //static string imageFilePath = @"my-image.png";
 
         //イメージパスから画像を分析するメソッド
-        private async void ReadText(string imageFilePath)
+        public async void ReadText(string imageFilePath)
         {
             try
             {
@@ -104,7 +104,7 @@ namespace Jarvis
                     return;
                 }
 
-                Console.WriteLine("\nResponse:\n\n{0}\n",JToken.Parse(contentString).ToString());
+                Console.WriteLine("\nResponse<ここがCognitive Serviceからのレスポンス！！！！>:\n\n{0}\n",JToken.Parse(contentString).ToString());
             }
             catch (Exception e)
             {
