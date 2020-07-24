@@ -33,7 +33,7 @@ namespace Jarvis
             var mediaOptions = new Plugin.Media.Abstractions.StoreCameraMediaOptions
             {
                 Directory = "PictureTest", // 保存先ディレクトリ
-                Name = $"{DateTime.UtcNow}.jpg" // 保存ファイル名
+                Name = $"{DateTime.UtcNow}.jpg" // 保存ファイル名 
             };
             var file = await CrossMedia.Current.TakePhotoAsync(mediaOptions);
             if (file == null)
@@ -43,6 +43,10 @@ namespace Jarvis
                 var stream = file.GetStream();
                 return stream;
             });
+
+            //試しに蘆花るのファイルパスを指定してみる
+            string filepath = @"my-image.png";
+            ReadText(filepath);
         }
 
         //Azureサブスクリプション系の設定をここで実施
@@ -51,7 +55,7 @@ namespace Jarvis
         static string uriBase = endpoint + "/vision/v3.0//read/analyze";
 
         //読み込むイメージのパスをここで設定している
-        static string imageFilePath = @"my-image.png";
+        //static string imageFilePath = @"my-image.png";
 
         //イメージパスから画像を分析するメソッド
         private async void ReadText(string imageFilePath)
