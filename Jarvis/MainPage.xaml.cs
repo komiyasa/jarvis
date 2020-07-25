@@ -45,7 +45,7 @@ namespace Jarvis
             });
 
             //試しにローカルのファイルパスを指定してみる
-            string filepath = @"bill.png";
+            string filepath = "samplephoto/bill.png";
             ReadText(filepath);
         }
 
